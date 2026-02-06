@@ -1,0 +1,14 @@
+.quill {
+  @apply outline outline-1 outline-slate-200 rounded-md py-1 px-1 w-full;
+}
+
+.ql-editor, .ql-container, .ql-snow {
+  font-weight: 500;
+  outline: 0px transparent !important;
+  border: 0px !important;
+}
+
+.quill > div {
+  border: none !important;
+  outline: none !important;
+}

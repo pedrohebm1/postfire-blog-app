@@ -1,0 +1,17 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+  .autofill-fix:-webkit-autofill,
+  .autofill-fix:-webkit-autofill:hover,
+  .autofill-fix:-webkit-autofill:focus,
+  .autofill-fix:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 40px rgb(243 244 246) inset;
+  }
+}
+
+body {
+  font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+}
+

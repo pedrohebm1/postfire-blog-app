@@ -1,0 +1,69 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id          Int      @id @default(autoincrement())
+  email       String   @unique
+  picture     String?
+  username    String   @unique
+  description String?
+  userBanner  String?
+  hash        String
+  createdAt   DateTime @default(now())
+
+  socialGithub String?
+  socialTwitter String?
+  socialInstagram String?
+  socialWebsite String?
+
+  bio String?
+
+  posts        Post[]
+  commentaries Commentary[]
+
+  followedBy User[] @relation("UserFollows")
+  following  User[] @relation("UserFollows")
+
+  likedCommentaries Commentary[] @relation("UserLikesCommentaries")
+}
+
+model Post {
+  id           Int          @id @default(autoincrement())
+  title        String
+  content      String
+  summary      String?
+  bannerImage  String?
+  createdAt    DateTime     @default(now())
+  allowCommentaries Boolean @default(true)
+  commentaries Commentary[]
+
+  author    User @relation(fields: [author_id], references: [id])
+  author_id Int
+}
+
+model Commentary {
+  id        Int      @id @default(autoincrement())
+  content   String
+  createdAt DateTime @default(now())
+
+  postId Int
+  post   Post @relation(fields: [postId], references: [id])
+
+  author    User @relation(fields: [author_id], references: [id], onDelete: Cascade)
+  author_id Int
+
+  depth Int @default(0)
+  isDeletedContent Boolean @default(false)
+
+  parentCommentId Int?
+  parentComment    Commentary?  @relation("SubCommentaries", fields: [parentCommentId], references: [id])
+  subcommentaries  Commentary[] @relation("SubCommentaries")
+
+  userLikes User[] @relation("UserLikesCommentaries")
+}

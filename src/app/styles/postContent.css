@@ -1,0 +1,11 @@
+#post-content > h1 {
+    @apply text-3xl
+}
+
+#post-content > h2 {
+    @apply text-2xl
+}
+
+#post-content > h3 {
+    @apply text-xl
+}

@@ -1,0 +1,23 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+li {
+    @apply text-lg ml-10
+}
+
+p {
+    @apply text-lg ml-10
+}
+
+h2 {
+    @apply text-5xl font-medium
+}
+
+h3 {
+    @apply text-3xl font-normal
+}
+
+ul {
+    @apply flex flex-col gap-5
+}
