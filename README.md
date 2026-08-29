@@ -8,7 +8,7 @@ Um blog interativo desenvolvido com **Next.js**, **Prisma**, **Tailwind CSS**, *
 
 # Sobre o projeto
 
-O **my-blog-app** é uma aplicação web desenvolvida com o objetivo de aprimorar conhecimentos em desenvolvimento Full Stack utilizando o ecossistema do React e tecnologias modernas.
+O **Postfire** é uma aplicação web desenvolvida com o objetivo de aprimorar conhecimentos em desenvolvimento Full Stack utilizando o ecossistema do React e tecnologias modernas.
 
 A aplicação permite que usuários publiquem conteúdos, compartilhem ideias e interajam através de comentários, utilizando uma arquitetura escalável e boas práticas de desenvolvimento.
 
