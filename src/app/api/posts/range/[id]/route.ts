@@ -1,26 +1,41 @@
 import { prisma } from "@/app/lib/client";
 import { NextRequest, NextResponse } from "next/server";
 
+type RouteContext = {
+  params: Promise<{ id: string }>;
+};
 
-export async function GET(req: NextRequest, route: { params: { id: string } }) {
+export async function GET(
+  req: NextRequest,
+  context: RouteContext
+) {
   try {
-    const id: number = Number(route.params.id);
+    const { id: rawId } = await context.params;
+    const id = Number(rawId);
 
-    if (isNaN(id) || id < 0) {
-      return NextResponse.json({ message: "Invalid ID" }, { status: 400 });
+    if (!Number.isInteger(id) || id < 0) {
+      return NextResponse.json(
+        { message: "Invalid page" },
+        { status: 400 }
+      );
     }
 
-    const postCount = await prisma.post.count();
-
     const pageSize = 10;
-    const page = id === 0 ? Math.ceil(postCount / pageSize) : Math.ceil(id / pageSize);
+    const totalPosts = await prisma.post.count();
+    const totalPages = Math.max(1, Math.ceil(totalPosts / pageSize));
+
+    const page = id === 0 ? 1 : id;
 
     const posts = await prisma.post.findMany({
       skip: (page - 1) * pageSize,
       take: pageSize,
+      orderBy: {
+        id: "desc",
+      },
       select: {
         id: true,
         title: true,
+        createdAt: true,
         author_id: true,
         bannerImage: true,
         author: {
@@ -29,14 +44,17 @@ export async function GET(req: NextRequest, route: { params: { id: string } }) {
           },
         },
       },
-      orderBy: {
-        id: "desc",
-      },
     });
 
-    return NextResponse.json({ Posts: posts }, { status: 200 });
+    return NextResponse.json({
+      posts,
+      page,
+      totalPages,
+      totalPosts,
+    });
   } catch (error) {
-    console.error("Error fetching posts:", error);
+    console.error(error);
+
     return NextResponse.json(
       { message: "Internal Server Error" },
       { status: 500 }

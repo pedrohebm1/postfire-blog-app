@@ -6,7 +6,7 @@ interface user {
   id: number;
   username: string;
   email: string;
-  picture: string;
+  picture: string | null;
 }
 
 export default function Form(props: {
@@ -111,7 +111,7 @@ export default function Form(props: {
           <div className="flex flex-row gap-4 items-start"> {/* Alinhamento vertical melhorado */}
             <img
               className="w-10 h-10 rounded-full"
-              src={props.user.picture}
+              src={props.user.picture?props.user.picture:"/static/images/defaultprofileicon.png"}
               alt={props.user.username}
             />
             <textarea

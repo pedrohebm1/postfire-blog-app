@@ -1,6 +1,4 @@
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
-import React from "react";
+// app/users/[id]/page.tsx
 import Navbar from "@/app/components/navbar/navbar";
 import Sidebar from "@/app/components/sidebar/sidebar";
 import userPostsList from "@/app/components/lists/userPostsList";
@@ -9,33 +7,17 @@ import { prisma } from "@/app/lib/client";
 import { cookies } from "next/headers";
 import Link from "next/link";
 import FollowButton from "@/app/components/user/followbutton";
-import "@/app/styles/quillEditor.css";
 import formatDate from "@/app/lib/validations/formatDate";
 
 async function getCookieData(): Promise<any> {
-  const cookieData = cookies();
-  return new Promise((resolve) =>
-    setTimeout(() => {
-      resolve(cookieData.get("Authorization")?.value.toString());
-    }, 1000)
-  );
+  const cookieData = await cookies();
+  return cookieData.get("Authorization")?.value.toString();
 }
 
-export default async function user({
-  params,
-}: {
-  params: { id: string; data: any };
-}) {
-  const token = await getCookieData();
+async function getUserProfile(userId: number) {
 
-  let sessionUser = token ? await authFetch(token) : null;
-
-  if (!(params.id && Number(params.id))) {
-    return <div>Bad request</div>;
-  }
-
-  const user = await prisma.user.findUnique({
-    where: { id: Number(params.id) },
+  return await prisma.user.findUnique({
+    where: { id: userId },
     select: {
       id: true,
       username: true,
@@ -52,15 +34,33 @@ export default async function user({
       posts: { take: 4 },
     },
   });
+}
 
-  const isFollowing = sessionUser
+type PageProps = {
+  params: Promise<{ id: string }>;
+};
+
+export default async function UserPage({ params }: PageProps) {
+  const token = await getCookieData();
+  let sessionUser = token ? await authFetch(token) : null;
+
+  const resolvedParams = await params;
+  const rawId = resolvedParams.id;
+
+  if (!rawId || isNaN(Number(rawId))) {
+    return <div>Bad request</div>;
+  }
+
+  const userId = Number(rawId);
+
+  const user = await getUserProfile(userId);
+
+  const isFollowing = (sessionUser && user)
     ? await prisma.user.findFirst({
         where: {
           id: sessionUser.id,
           following: {
-            some: {
-              id: Number(params.id),
-            },
+            some: { id: userId },
           },
         },
       })
@@ -79,11 +79,7 @@ export default async function user({
                 className="flex items-center justify-center overflow-hidden w-full h-60 md:h-56 lg:h-64 xl:h-80 rounded-t-xl"
               >
                 {user.userBanner ? (
-                  <img
-                    className="w-full h-full object-cover"
-                    src={user.userBanner}
-                    alt="User banner"
-                  />
+                  <img className="w-full h-full object-cover" src={user.userBanner} alt="User banner" />
                 ) : (
                   <div className="w-full h-full object-cover bg-gray-600"/>
                 )}
@@ -94,17 +90,11 @@ export default async function user({
                   <div className="flex flex-col justify-center gap-2">
                     <img
                       className="h-32 m-auto border-4 border-white rounded-full -mt-20 bg-white"
-                      src={`${
-                        user.picture
-                          ? user.picture
-                          : "/static/images/perfil.png"
-                      }`}
+                      src={`${user.picture ? user.picture : "/static/images/perfil.png"}`}
                       alt=""
                     />
                     <div className="flex flex-col gap-2">
-                      <span className="text-center text-2xl">
-                        {user.username}
-                      </span>
+                      <span className="text-center text-2xl">{user.username}</span>
                       <span className="text-center text-xl text-gray-600">
                         {user.description ? user.description : ""}
                       </span>
@@ -123,76 +113,35 @@ export default async function user({
                       </span>
                     </div>
                   </div>
-                  <div
-                    id="contacts"
-                    className="flex flex-col justify-center mt-5 gap-5"
-                  >
+                  
+                  <div id="contacts" className="flex flex-col justify-center mt-5 gap-5">
                     {user.socialInstagram && (
-                      <Link
-                        href={user.socialInstagram}
-                        target={"_blank"}
-                        className="flex flex-row gap-2 justify-start h-4 m-auto md:m-0"
-                      >
-                        <img
-                          className="w-4 select-none"
-                          src="/static/images/instagram.png"
-                          alt="Instagram icon made by Freepik - Flaticon"
-                        />
-                        <span className="text-xs leading-4">
-                          {user.socialInstagram}
-                        </span>
+                      <Link href={user.socialInstagram} target={"_blank"} className="flex flex-row gap-2 justify-start h-4 m-auto md:m-0">
+                        <img className="w-4 select-none" src="/static/images/instagram.png" alt="Instagram" />
+                        <span className="text-xs leading-4">{user.socialInstagram}</span>
                       </Link>
                     )}
                     {user.socialTwitter && (
-                      <Link
-                        href={user.socialTwitter}
-                        target={"_blank"}
-                        className="flex flex-row gap-2 justify-start h-4 m-auto md:m-0"
-                      >
-                        <img
-                          className="w-4 select-none"
-                          src="/static/images/twitter.png"
-                          alt="X icon made by Freepik - Flaticon"
-                        />
-                        <span className="text-xs leading-4">
-                          {user.socialTwitter}
-                        </span>
+                      <Link href={user.socialTwitter} target={"_blank"} className="flex flex-row gap-2 justify-start h-4 m-auto md:m-0">
+                        <img className="w-4 select-none" src="/static/images/twitter.png" alt="X" />
+                        <span className="text-xs leading-4">{user.socialTwitter}</span>
                       </Link>
                     )}
                     {user.socialGithub && (
-                      <Link
-                        href={user.socialGithub}
-                        target={"_blank"}
-                        className="flex flex-row gap-2 justify-start h-4 m-auto md:m-0"
-                      >
-                        <img
-                          className="w-4 select-none"
-                          src="/static/images/github.png"
-                          alt="Github icon made by icons8"
-                        />
-                        <span className="text-xs leading-4">
-                          {user.socialGithub}
-                        </span>
+                      <Link href={user.socialGithub} target={"_blank"} className="flex flex-row gap-2 justify-start h-4 m-auto md:m-0">
+                        <img className="w-4 select-none" src="/static/images/github.png" alt="Github" />
+                        <span className="text-xs leading-4">{user.socialGithub}</span>
                       </Link>
                     )}
                     {user.socialWebsite && (
-                      <Link
-                        href={user.socialWebsite}
-                        target={"_blank"}
-                        className="flex flex-row gap-2 justify-start h-4 m-auto md:m-0"
-                      >
-                        <img
-                          className="w-4 select-none"
-                          src="/static/images/website.png"
-                          alt="Website icon made by icons8"
-                        />
-                        <span className="text-xs leading-4">
-                          {user.socialWebsite}
-                        </span>
+                      <Link href={user.socialWebsite} target={"_blank"} className="flex flex-row gap-2 justify-start h-4 m-auto md:m-0">
+                        <img className="w-4 select-none" src="/static/images/website.png" alt="Website" />
+                        <span className="text-xs leading-4">{user.socialWebsite}</span>
                       </Link>
                     )}
                   </div>
                 </div>
+                
                 <div className="m-0 w-full md:w-8/12 md:m-5 pt-5 md:pt-0">
                   <h1 className="text-2xl font-medium">About me</h1>
                   <p className="indent-8 mt-5">
@@ -200,10 +149,9 @@ export default async function user({
                   </p>
                 </div>
               </div>
+              
               <div className="w-3/4 m-auto md:w-2/4 md:m-0">
-                {user.posts.length > 0 && (
-                  <h1 className="text-2xl font-medium mb-10">Posts</h1>
-                )}
+                {user.posts.length > 0 && <h1 className="text-2xl font-medium mb-10">Posts</h1>}
                 {userPostsList(user.posts)}
               </div>
             </div>

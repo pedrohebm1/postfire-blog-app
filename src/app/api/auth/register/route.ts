@@ -57,7 +57,7 @@ export async function POST(req: NextRequest) {
       domain: process.env.NEXT_PUBLIC_DOMAIN,
       secure: process.env.NODE_ENV === "production",
     });
-    return NextResponse.redirect(new URL("/", req.url));
+    return NextResponse.json({ success: true, message: "User registered" }, { status: 201 });
   } else {
     return NextResponse.json(
       { Message: "User already exists" },

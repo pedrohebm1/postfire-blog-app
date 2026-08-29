@@ -3,12 +3,18 @@ import { prisma } from "@/app/lib/client";
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { deleteFileS3 } from "@/app/lib/amazons3";
+import { revalidateTag } from "next/cache";
 
-export async function DELETE(req: NextRequest, { params }: { params: { id: number } }) {
+type RouteContext = {
+  params: Promise<{ id: string }>;
+};
+
+export async function DELETE(req: NextRequest, context: RouteContext) {
   try {
-    const id = Number(params.id)
+    const { id: rawId } = await context.params;
+    const id = Number(rawId);
 
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     const token = cookieStore.get("Authorization");
 
     if (!id) {
@@ -63,6 +69,7 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: numbe
         id: Number(id),
       },
     });
+    revalidateTag(`post-${id}`, { expire: 0 })
     return NextResponse.json(
       { message: "Post Deleted Successfully" },
       { status: 201 }

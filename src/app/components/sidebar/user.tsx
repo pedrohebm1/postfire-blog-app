@@ -16,17 +16,20 @@ export default function User(props: { user: any}) {
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setDroppedMenu(false);
-      }
+  const handleClickOutside = (event: MouseEvent) => {
+    // Optional chaining ensures we don't throw if the ref becomes null mid-click
+    const targetNode = event.target as Node;
+    if (dropdownRef.current?.contains(targetNode) === false) {
+      setDroppedMenu(false);
     }
+  };
 
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
+  document.addEventListener("mousedown", handleClickOutside);
+  return () => {
+    document.removeEventListener("mousedown", handleClickOutside);
+  };
+}, []);
+
 
   if (props.user) {
     return (

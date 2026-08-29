@@ -6,13 +6,19 @@ import { prisma } from "@/app/lib/client";
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import sanitizeHtml from "sanitize-html";
+import { fileTypeFromBuffer } from "file-type";
+import { randomUUID } from "crypto";
+
+type RouteContext = {
+  params: Promise<{ id: string }>;
+};
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: number } }
+  context: RouteContext
 ) {
   try {
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     const token = cookieStore.get("Authorization");
 
     if (!token || !verifyToken(token.value)) {
@@ -29,18 +35,22 @@ export async function PUT(
       return NextResponse.json({ message: "User not found" }, { status: 404 });
     }
 
+    const { id: rawId } = await context.params;
+
     const formData = await req.formData();
 
-    if (!params.id) {
+    if (!rawId) {
       return NextResponse.json(
         { message: "Invalid parameters" },
         { status: 404 }
       );
     }
 
+    const id = Number(rawId);
+
     const post = await prisma.post.findUnique({
       where: {
-        id: Number(params.id),
+        id: Number(id),
       },
     });
 
@@ -62,8 +72,6 @@ export async function PUT(
         : false
       : (null as Boolean | null);
 
-      console.log(title, summary, content, bannerImage, allowComments)
-
     const validation = postValidation({
       title,
       summary,
@@ -78,13 +86,19 @@ export async function PUT(
       );
     }
 
-    console.log("Validation passed");
-    console.log("Form data:", formData);
-
     let fileUrl = null;
     if (bannerImage) {
       const arrayBuffer = await bannerImage.arrayBuffer();
       const buffer = Buffer.from(arrayBuffer);
+
+      const detectedType = await fileTypeFromBuffer(buffer);
+
+      if (!detectedType) {
+        return NextResponse.json(
+          { message: "Security Error: Invalid or malicious image format detected." },
+          { status: 400 }
+        );
+      }
 
       const optimizedBuffer = await ProcessImageFromBuffer({
         buffer: buffer,
@@ -93,6 +107,9 @@ export async function PUT(
         fit: "cover",
         quality: 70,
       });
+
+      const fileExtension = detectedType.ext;
+      const generatedName = `${randomUUID()}.${fileExtension}`
 
       fileUrl = await fileUploadS3(
         optimizedBuffer,
@@ -105,7 +122,7 @@ export async function PUT(
 
     await prisma.post.update({
       where: {
-        id: Number(params.id),
+        id: Number(id),
       },
       data: {
         title: title ? title : post.title,

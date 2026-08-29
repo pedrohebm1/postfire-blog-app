@@ -146,7 +146,7 @@ export default function AccountSection({ user }: AccountSectionProps) {
   function handleChange(e: React.FormEvent<HTMLInputElement>) {
     const fileInput = e.currentTarget.files![0];
 
-    const VALID_FILE_TYPES = ["image/jpeg", "image/png"];
+    const VALID_FILE_TYPES = ["image/jpeg", "image/png", "image/webp"];
     if (fileInput) {
       if (!VALID_FILE_TYPES.includes(fileInput.type)) {
         alert("Invalid file type. Please select a JPG or PNG image.");

@@ -6,12 +6,8 @@ import Searchresults from "../components/ui/searchresults";
 
 
 async function getCookieData(): Promise<any> {
-  const cookieData = cookies()
-  return new Promise((resolve) =>
-    setTimeout(() => {
-      resolve(cookieData.get("Authorization")?.value.toString())
-    }, 1000)
-  )
+  const cookieData = await cookies()
+  cookieData.get("Authorization")?.value.toString()
 }
 
 export default async function Search() {

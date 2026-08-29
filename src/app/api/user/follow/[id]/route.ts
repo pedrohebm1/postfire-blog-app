@@ -3,9 +3,13 @@ import { prisma } from "@/app/lib/client";
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 
-export async function POST(req: NextRequest, { params }: { params: { id: any } }) {
+type RouteContext = {
+  params: Promise<{ id: string }>;
+};
+
+export async function POST(req: NextRequest, context: RouteContext) {
   try {
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     const token = cookieStore.get("Authorization");
 
     if (!token || !verifyToken(token.value)) {
@@ -22,13 +26,17 @@ export async function POST(req: NextRequest, { params }: { params: { id: any } }
       return NextResponse.json({ message: "User not found" }, { status: 404 });
     }
 
-    if (!params.id) {
+    const { id: rawId } = await context.params;
+
+    if (!rawId) {
       return NextResponse.json({ message: "Missing userID" }, { status: 400 });
     }
 
+    const id = Number(rawId);
+
     const targetUser = await prisma.user.findUnique({
       where: {
-        id: Number(params.id),
+        id: Number(id),
       },
     });
 

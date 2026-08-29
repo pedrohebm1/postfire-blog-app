@@ -1,6 +1,6 @@
+// app/post/[id]/page.tsx
 import { prisma } from "@/app/lib/client";
-import { cookies } from "next/headers";
-import { authFetch } from "@/app/lib/authFetch";
+import { getSessionUser } from "@/app/lib/auth"; // Direct DB/JWT check
 import CommentaryForm from "@/app/components/post/comments/form";
 import PostContent from "@/app/components/post/content";
 import Navbar from "@/app/components/navbar/navbar";
@@ -22,20 +22,9 @@ interface Post {
   };
 }
 
-async function getCookieData(): Promise<any> {
-  const cookieData = cookies();
-  return new Promise((resolve) =>
-    setTimeout(() => {
-      resolve(cookieData.get("Authorization")?.value.toString());
-    }, 1000)
-  );
-}
-
 async function getPost(id: number): Promise<Post | null> {
-  const post: Post | null = await prisma.post.findUnique({
-    where: {
-      id: Number(id),
-    },
+  return await prisma.post.findUnique({
+    where: { id },
     select: {
       id: true,
       title: true,
@@ -53,44 +42,24 @@ async function getPost(id: number): Promise<Post | null> {
       },
     },
   });
-
-  return post;
 }
 
 async function getCommentaries(postId: number): Promise<any[]> {
-  const commentaries = await prisma.commentary.findMany({
-    where: {
-      postId: postId,
-    },
+  return await prisma.commentary.findMany({
+    where: { postId },
     include: {
       userLikes: true,
       author: {
-        select: {
-          id: true,
-          username: true,
-          picture: true,
-        },
+        select: { id: true, username: true, picture: true },
       },
       subcommentaries: {
         include: {
           userLikes: true,
-          author: {
-            select: {
-              id: true,
-              username: true,
-              picture: true,
-            },
-          },
+          author: { select: { id: true, username: true, picture: true } },
           subcommentaries: {
             include: {
               userLikes: true,
-              author: {
-                select: {
-                  id: true,
-                  username: true,
-                  picture: true,
-                },
-              },
+              author: { select: { id: true, username: true, picture: true } },
               subcommentaries: true,
             },
           },
@@ -98,16 +67,20 @@ async function getCommentaries(postId: number): Promise<any[]> {
       },
     },
   });
-
-  return commentaries;
 }
 
-export default async function Post({ params }: { params: { id: number } }) {
-  const token = await getCookieData();
+type PageProps = {
+  params: Promise<{ id: string }>;
+};
 
-  let sessionUser = token ? await authFetch(token) : null;
+export default async function Post({ params }: PageProps) {
+  const sessionUser = await getSessionUser();
 
-  const post = await getPost(Number(params.id));
+  const resolvedParams = await params;
+  const rawId = Number(resolvedParams.id);
+
+  const post = await getPost(rawId);
+
   if (!post) {
     return (
       <main>
@@ -122,7 +95,7 @@ export default async function Post({ params }: { params: { id: number } }) {
     );
   }
 
-  const commentaries = await getCommentaries(Number(params.id));
+  const commentaries = await getCommentaries(rawId);
 
   return (
     <main>
@@ -132,7 +105,7 @@ export default async function Post({ params }: { params: { id: number } }) {
         <div className="flex flex-col w-screen lg:ml-40 lg:mr-40 mb-32 mx-2 md:mx-10">
           <PostContent
             post={post}
-            userId={sessionUser ? sessionUser.id : null}
+            userId={sessionUser ? Number(sessionUser.id) : undefined}
           />
 
           <CommentaryForm

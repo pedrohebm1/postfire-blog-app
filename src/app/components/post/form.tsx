@@ -1,9 +1,6 @@
 "use client";
-const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
+import LexicalEditor from "../LexicalEditor";
 import ToggleButton from "../ui/togglebutton";
-import "react-quill/dist/quill.snow.css";
-import "@/app/styles/quillEditor.css";
-import dynamic from "next/dynamic";
 
 const Settings = {
   image: {
@@ -12,7 +9,7 @@ const Settings = {
     maxwidth: 12000,
     maxheight: 6000,
     maxsize: 5000000,
-    acceptables: ["image/jpeg", "image/png", "image/gif"],
+    acceptables: ["image/jpeg", "image/png", "image/webp"], 
   }
 }
 
@@ -78,12 +75,12 @@ export default function Form({ state, setState }: any) {
     }));
   };
 
-  const updateField = (field: string, value: any, delta?: any, source?: any) => {
-    if(delta && source) {
-      console.log(delta, source)
-    }
-    setState((prev: any) => ({ ...prev, [field]: value }));
-  };
+  const updateField = (field: string, value: any) => {
+  setState((prev: any) => ({
+    ...prev,
+    [field]: value,
+  }));
+};
 
   return (
     <div className="flex flex-col items-center">
@@ -162,14 +159,11 @@ export default function Form({ state, setState }: any) {
       </section>
 
       <section className="my-4 w-full">
-        <ReactQuill
-          theme="snow"
-
-          placeholder="Write something amazing..."
+        <LexicalEditor
           value={state.content}
-          onChange={(value, delta, source) => updateField("content", value, delta, source)}
-          preserveWhitespace={true}
+          onChange={(html) => updateField("content", html)}
         />
+
       </section>
 
       <div className="flex flex-col w-full items-center">

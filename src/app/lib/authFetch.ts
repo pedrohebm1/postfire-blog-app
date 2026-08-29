@@ -1,10 +1,14 @@
+import { connection } from "next/server";
+
 export async function authFetch(token: any) {
   let user = null;
+
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
 
   if (token) {
     try {
       const response = await fetch(
-        "https://postfire.vercel.app/api/auth/authenticate",
+        baseUrl+"/api/auth/authenticate",
         {
           method: "POST",
           headers: {

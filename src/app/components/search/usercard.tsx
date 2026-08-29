@@ -1,7 +1,6 @@
 import Link from "next/link";
 
 export default function UserCard({user}: any) {
-  console.log(user.user)
   return (
     <Link
       href={`/users/${user.id}`}

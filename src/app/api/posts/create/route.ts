@@ -9,7 +9,7 @@ import sanitizeHtml from 'sanitize-html';
 
 export async function POST(req: NextRequest) {
   try {
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     const token = cookieStore.get("Authorization");
 
     if (!token || !verifyToken(token.value)) {
@@ -34,7 +34,6 @@ export async function POST(req: NextRequest) {
     const bannerImage = formData.get("bannerImage") as File | null;
     const allowComments = formData.get("allowcomments") === "true";
 
-    console.log(title, summary, content, bannerImage, content);
     if (!title || !summary || !content) {
       return NextResponse.json(
         { message: "Missing required fields" },
@@ -87,7 +86,6 @@ export async function POST(req: NextRequest) {
     });
     return NextResponse.json({ id: post.id }, { status: 201 });
   } catch (err) {
-    console.log(err);
     return NextResponse.json(
       { message: "Internal Server Error" },
       { status: 500 }

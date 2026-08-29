@@ -7,7 +7,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
   try {
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     const token = cookieStore.get("Authorization");
 
     if (!token) {
@@ -42,7 +42,6 @@ export async function POST(req: NextRequest) {
     const bannerimage = formData.get("bannerimage") as File | null;
 
     if (picture && user.picture) {
-      console.log("deleted user picture");
       const key = user.picture.split("/").pop();
       if (key) {
         await deleteFileS3(key);
@@ -50,7 +49,6 @@ export async function POST(req: NextRequest) {
     }
 
     if (bannerimage && user.userBanner) {
-      console.log("deleted user banner");
       const key = user.userBanner.split("/").pop();
       if (key) {
         await deleteFileS3(key);

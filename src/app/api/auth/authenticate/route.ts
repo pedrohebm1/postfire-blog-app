@@ -5,7 +5,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
   try {
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     const cookieToken = cookieStore.get("Authorization")?.value;
     const headerToken = req.headers.get("Authorization");
 
@@ -30,7 +30,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ user }, { status: 200 });
     }
   } catch (error) {
-    console.log(error)
     return NextResponse.json(
       { message: "Failed to fetch user" },
       { status: 401 }

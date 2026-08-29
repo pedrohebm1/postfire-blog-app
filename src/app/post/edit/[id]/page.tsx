@@ -5,6 +5,7 @@ import { authFetch } from "@/app/lib/authFetch";
 import { prisma } from "@/app/lib/client";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { getSessionUser } from "@/app/lib/auth";
 
 interface Post {
   id: number;
@@ -21,27 +22,23 @@ interface Post {
   };
 }
 
-async function getCookieData(): Promise<any> {
-  const cookieData = cookies();
-  return new Promise((resolve) =>
-    setTimeout(() => {
-      resolve(cookieData.get("Authorization")?.value.toString());
-    }, 1000)
-  );
-}
+type PageProps = {
+  params: Promise<{ id: string }>;
+};
 
 export default async function Edit({ params }: { params: { id: number } }) {
-  const token = await getCookieData();
-
-  let sessionUser = token ? await authFetch(token) : null;
-
+  const sessionUser = await getSessionUser();
+  
   if (!sessionUser) {
     redirect("/signin");
   }
 
+  const resolvedParams = await params;
+  const rawId = resolvedParams.id;
+
   const post: Post | null = await prisma.post.findUnique({
     where: {
-      id: Number(params.id),
+      id: Number(rawId),
     },
     select: {
       id: true,

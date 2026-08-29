@@ -1,0 +1,58 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: postgres_db
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    env_file:
+      - .env
+
+  localstack:
+    image: localstack/localstack:latest
+    container_name: localstack_main
+    ports:
+      - "4566:4566"
+    environment:
+      - SERVICES=s3,sqs,sns
+      - AWS_DEFAULT_REGION=sa-east-1
+      - DEBUG=0
+      - LOCALSTACK_AUTH_TOKEN=${LOCALSTACK_AUTH_TOKEN}
+      - PERSISTENCE=1
+    volumes:
+      - localstack_data:/var/lib/localstack
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    env_file:
+      - .env
+
+  client-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/.next
+    depends_on:
+      - postgres
+      - localstack
+    environment:
+      WATCHPACK_POLLING: "true"
+      DATABASE_URL: ${DATABASE_URL}
+      AWS_ENDPOINT_URL: ${NEXT_PUBLIC_AWS_ENDPOINT}
+      AWS_REGION: "sa-east-1" # Passado diretamente como valor fixo
+      AWS_ACCESS_KEY_ID: ${AWS_S3_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_S3_SECRET_ACCESS_KEY}
+    env_file:
+      - .env
+
+volumes:
+  pgdata:
+  localstack_data:

@@ -3,6 +3,7 @@ import Sidebar from "./components/sidebar/sidebar";
 import PostCards from "./components/post/postcards";
 import { cookies } from "next/headers";
 import { authFetch } from "./lib/authFetch";
+import { getSessionUser } from "./lib/auth";
 
 type Post = {
   postId: number;
@@ -15,19 +16,9 @@ type Post = {
   };
 };
 
-async function getCookieData(): Promise<any> {
-  const cookieData = cookies()
-  return new Promise((resolve) =>
-    setTimeout(() => {
-      resolve(cookieData.get("Authorization")?.value.toString())
-    }, 1000)
-  )
-}
-
 export default async function Home() {
-  const token = await getCookieData();
-  
-    let sessionUser = token ? await authFetch(token) : null;
+  const sessionUser = await getSessionUser();
+
   return (
     <div>
       <Navbar />

@@ -2,10 +2,10 @@ interface BlogPost {
   title: string | null;
   summary: string | null;
   content: string | null;
-  bannerImage: File | null;
+  bannerImage?: File | null;
 }
 
-const VALID_FILE_TYPES = ["image/jpeg", "image/png", "image/gif"];
+const VALID_FILE_TYPES = ["image/jpeg", "image/png", "image/webp"];
 const MAX_FILE_SIZE_MB = 10;
 const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
 
@@ -28,7 +28,7 @@ export default function postValidation(blogPost: BlogPost) {
       errors.push("Content is required.");
     } else if (getTextContentLength(blogPost.content) < 30) {
       errors.push(
-        "Content must be at least 30 characters (excluding HTML tags)."
+        "Content must be at least 30 characters."
       );
     }
 

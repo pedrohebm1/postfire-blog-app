@@ -1,4 +1,3 @@
-export const dynamic = 'force-dynamic'
 import type { Metadata } from "next";
 import { Roboto } from "next/font/google";
 import "./styles/globals.css";
@@ -17,6 +16,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       <body className={roboto.className}>{children}</body>
     </html>
   );

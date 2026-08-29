@@ -3,12 +3,16 @@ import { prisma } from "@/app/lib/client";
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 
+type RouteContext = {
+  params: Promise<{ id: string }>;
+};
+
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  context: RouteContext
 ) {
   try {
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     const token = cookieStore.get("Authorization");
 
     if (!token || !verifyToken(token.value)) {
@@ -26,7 +30,8 @@ export async function POST(
     }
 
     const { content } = await req.json();
-    const postId = Number(params.id);
+    const { id: rawId } = await context.params;
+    const postId = Number(rawId);
 
     if (!postId || !content) {
       return NextResponse.json(

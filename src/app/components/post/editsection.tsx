@@ -32,7 +32,7 @@ interface State {
   allowComments: boolean;
 }
 
-export default function EdictSection({ post }: { post: Post }) {
+export default function EditSection({ post }: { post: Post }) {
   const initialState: State = {
     title: post.title,
     summary: post.summary,
