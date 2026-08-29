@@ -1,4 +1,4 @@
-# my-blog-app
+# Postfire app
 
 Um blog interativo desenvolvido com **Next.js**, **Prisma**, **Tailwind CSS**, **PostgreSQL** e **AWS S3**, permitindo a criação, edição e visualização de posts, além da interação por meio de comentários.
 
